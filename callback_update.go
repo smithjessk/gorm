@@ -3,6 +3,7 @@ package gorm
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -59,7 +60,15 @@ func updateCallback(scope *Scope) {
 		var sqls []string
 
 		if updateAttrs, ok := scope.InstanceGet("gorm:update_attrs"); ok {
-			for column, value := range updateAttrs.(map[string]interface{}) {
+			updateMap := updateAttrs.(map[string]interface{})
+			var columns []string
+			for c := range updateMap {
+				columns = append(columns, c)
+			}
+			sort.Strings(columns)
+
+			for _, column := range columns {
+				value := updateMap[column]
 				sqls = append(sqls, fmt.Sprintf("%v = %v", scope.Quote(column), scope.AddToVars(value)))
 			}
 		} else {
